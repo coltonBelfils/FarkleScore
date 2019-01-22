@@ -55,7 +55,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         readIn()
 
         findViewById<Button>(R.id.undoButton).setOnLongClickListener {
-            while (undoHandler());
+            history = HistoryStackGame().apply {
+                currentTurn = HistoryStackTurn()
+                push(currentTurn)
+            }
+            resetButtonValues()
+            updateOutput()
             true
         }
         findViewById<TextView>(R.id.threeKindSliderNumber).text = (threeKindSlider.progress + 1).toString()
@@ -83,18 +88,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_reset -> {
-                while (undoHandler());
+                history = HistoryStackGame().apply {
+                    currentTurn = HistoryStackTurn()
+                    push(currentTurn)
+                }
+                resetButtonValues()
+                updateOutput()
                 true
             }
             R.id.action_settings -> {
@@ -207,15 +213,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         updateOutput()
                     }
                 }
-                /*
-                history.push(FarkleButton(-1, -1, "turnEndFlag", currentTurnScore, currentDiceUsed, 0))
-                resetButtonValues()
-                currentTotalScore += currentTurnScore
-                currentTurnScore = 0
-                turnScore.text = currentTurnScore.toString()
-                totalScore.text = currentTotalScore.toString()
-                currentDiceUsed = 0
-                */
             }
             R.id.farkle -> {
                 history.peek()?.farkle = true
@@ -224,22 +221,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 resetButtonValues()
                 turnScore.text = 0.toString()
                 diceLeft.text = 6.toString()
-
-                /*
-                while(undoHandler(true));
-                if (currentTurnScore != 0) history.push(FarkleButton(-1, -1, "turnEndFlag", currentTurnScore, currentDiceUsed, 0))
-
-                var grab = history.pop()
-                while (grab != null) {
-                    if(grab.id == -1) {
-                        break
-                    } else {
-                        undoHandler(grab, true)
-                        grab = history.pop()
-                    }
-                }
-                if (grab != null) history.push(grab)
-                */
             }
             R.id.undoButton -> undoHandler()
         }
@@ -260,25 +241,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         } else {
             Toast.makeText(this, "There are not enough dice left for a ${fBtn.name}", Toast.LENGTH_LONG).show()
         }
-
-        /*
-        ("TEST", history.toString())
-        if(fBtn.id == -1) return
-        if((currentDiceUsed + fBtn.diceNeeded) <= 6) {
-            if(write) {
-                history.push(fBtn)
-            }
-            currentDiceUsed += fBtn.diceNeeded
-            currentTurnScore += fBtn.value
-            fBtn.pressedCount++
-            findViewById<TextView>(fBtn.textId).text = fBtn.pressedCount.toString()
-            turnScore.text = currentTurnScore.toString()
-            if (currentDiceUsed == 6) currentDiceUsed = 0
-        } else {
-            Toast.makeText(this, "There are not enough dice left for a ${fBtn.name}", Toast.LENGTH_LONG).show()
-        }
-        ("TEST", history.toString())
-        */
     }
 
     private fun undoHandler(): Boolean {
@@ -303,34 +265,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         return true
     }
 
-    /*
-    private fun undoHandler(fBtn: FarkleButton) : Boolean {
-
-
-        /*
-        ("TEST", history.toString())
-        if(fBtn.id == -1) {//is a turn end flag
-            if(testForTurnEndFlag) {
-                history.push(fBtn)
-                return false
-            } else {
-                readTill(fBtn)
-                val grab = history.pop()
-                if(grab != null) undoHandler(grab, testForTurnEndFlag) else return false
-                return true
-            }
-        } else {
-            currentTurnScore -= fBtn.value
-            turnScore.text = currentTurnScore.toString()
-            fBtn.pressedCount--
-            findViewById<Button>(fBtn.textId).text = fBtn.pressedCount.toString()
-            currentDiceUsed -= fBtn.diceNeeded
-            return true
-        }
-        */
-    }
-    */
-
     private fun readIn() {
         var read = currentTurn.deQueue()
         while (read != null) {
@@ -338,16 +272,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             read = currentTurn.deQueue()
         }
         currentTurn.resetQueue()
-
-        /*
-        var read = history.deQueue()
-        while (read != null) {
-            onClick(read.id, false)
-            read = history.deQueue()
-        }
-        history.resetQueue()
-        ("TEST", history.toString())
-        */
     }
 
     private fun updateOutput() {

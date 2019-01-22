@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    <android.support.constraint.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/inputHolder"
+            app:layout_constraintTop_toTopOf="@+id/inputHolder" app:layout_constraintStart_toStartOf="parent"
+            android:id="@+id/promptHolder"
+            app:layout_constraintEnd_toStartOf="@+id/inputHolder" android:layout_marginEnd="32dp"
+            android:layout_marginStart="8dp">
+
+        <TextView
+                android:text="@string/pickupDialog_input_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/pickupInputScorePrompt"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/pickupInputDicePrompt"
+                app:layout_constraintStart_toStartOf="parent" android:textColor="@color/colorPrimaryDark"/>
+        <TextView
+                android:text="@string/pickupDialog_dice_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/pickupInputDicePrompt"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pickupInputScorePrompt"
+                app:layout_constraintStart_toStartOf="parent" android:textColor="@color/colorPrimaryDark"/>
+    </android.support.constraint.ConstraintLayout>
+    <android.support.constraint.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/inputHolder"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"
+    >
+
+        <EditText
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/pickupInputScore"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/pickupInputDice" android:importantForAutofill="no"/>
+        <EditText
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/pickupInputDice"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pickupInputScore" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="1.0"
+                android:importantForAutofill="no"/>
+    </android.support.constraint.ConstraintLayout>
+</android.support.constraint.ConstraintLayout>

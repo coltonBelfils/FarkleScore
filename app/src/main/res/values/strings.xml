@@ -26,8 +26,6 @@
     <string name="pickupDialog_dice_score">Number of Dice Left:</string>
     <string name="okay">Okay</string>
     <string name="cancal">Cancel</string>
-    <string name="reset">Reset</string>
-    <string name="feedback">Feedback</string>
     <string name="settings_general">General</string>
     <string name="settings_feedback_plug">Have any other ideas for settings? Give some feedback in the feedback screen
     </string>

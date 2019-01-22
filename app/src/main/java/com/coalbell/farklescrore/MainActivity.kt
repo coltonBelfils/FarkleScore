@@ -52,7 +52,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         currentTurn = history.peek()!!
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbarFeedback)
+        resetButtonValues()
         readIn()
+        updateOutput()
 
         findViewById<Button>(R.id.undoButton).setOnLongClickListener {
             history = HistoryStackGame().apply {

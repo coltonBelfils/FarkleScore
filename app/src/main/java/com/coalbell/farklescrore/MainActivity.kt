@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             threePairsButton.id -> clickHandler(threePairsButton, write)
             twoTripletsButton.id -> clickHandler(twoTripletsButton, write)
             R.id.endTurn -> {
-                if(currentTurn.isEmpty() && history.currentTotalScore >= 500) {
+                if(currentTurn.isEmpty() && history.currentTotalScore >= minBoardScore) {
                     var value = 0
                     var dice = 0
                     //dialog
@@ -202,7 +202,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                             }
                         }
                     }
-                } else if(currentTurn.isEmpty()) {
+                } else if(!currentTurn.isEmpty()) {
                     if ((currentTurn.currentTurnScore + history.currentTotalScore) < minBoardScore) {
                         Toast.makeText(
                             this, "You must have at least $minBoardScore total points to end your turn", Toast.LENGTH_LONG).show()
@@ -302,7 +302,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         turnScore.text = currentTurn.currentTurnScore.toString()
         totalScore.text = history.currentTotalScore.toString()
         val numberDiceLeft = (((currentTurn.currentDiceUsed / 6) * 6) + 6) - currentTurn.currentDiceUsed
-        diceLeft.text = if(currentTurn.isEmpty() && history.currentTotalScore >= 500) {
+        diceLeft.text = if(currentTurn.isEmpty() && history.currentTotalScore >= minBoardScore) {
             endTurn.text = getString(R.string.pick_up_score)
             6.toString()
         } else {

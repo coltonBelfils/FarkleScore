@@ -13,18 +13,20 @@ class HistoryStackTurn() : Parcelable {
 
     var currentTurnScore = 0
         set(value) {
-            if (value < 0 || value % 50 != 0) throw IllegalArgumentException("currentTurnScore is not mod 50 or less than 0 at value: $value") else field = value
+            field = if (value < 0) value else value
         }
     var currentDiceUsed = 0
         set(value) {
-            if(value < 0) throw IllegalArgumentException("currentDiceUsed is not within the range 0..6 at value $value") else field = value
+            field = if (value < 0) value else value
         }
     var farkle: Boolean = false
 
     constructor(parcel: Parcel) : this() {
         val array = parcel.readParcelableArray(HistoryStackTurn::class.java.classLoader)
         if (array != null) for (i in array) {
-            this.push(i as FarkleButton)
+            if(i != null) {
+                this.push(i as FarkleButton)
+            }
         }
 
         this.size = parcel.readInt()

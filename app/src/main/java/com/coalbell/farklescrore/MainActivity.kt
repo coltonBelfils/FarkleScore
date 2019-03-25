@@ -4,12 +4,12 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
+import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.view.Menu
 import android.view.MenuItem
@@ -43,15 +43,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        history = savedInstanceState?.getParcelable(GAME_HISTORY_KEY) ?: run {
-            HistoryStackGame().apply {
-                push(HistoryStackTurn())
-            }
-        }
+        history = savedInstanceState?.getParcelable(GAME_HISTORY_KEY) ?: HistoryStackGame()
         getSharedPreferences(SHARED_PREFERENCES_SETTINGS_KEY, Context.MODE_PRIVATE).apply {
             minBoardScore = getInt(MIN_BOARD_SCORE_KEY, 500)
         }
-        currentTurn = history.peek()!!
+        currentTurn = history.peek() ?: run {
+            currentTurn = HistoryStackTurn()
+            history.push(currentTurn)
+            currentTurn
+        }
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbarFeedback)
         resetButtonValues()
@@ -138,7 +138,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 if(currentTurn.isEmpty() && history.currentTotalScore >= minBoardScore) {
                     var value = 0
                     var dice = 0
-                    //dialog
                     val view = layoutInflater.inflate(R.layout.activity_pickup_dialog, null)
                     val inScore = view.findViewById<EditText>(R.id.pickupInputScore)
                     val inDice = view.findViewById<EditText>(R.id.pickupInputDice)
@@ -165,7 +164,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         inDice.addTextChangedListener(object : TextWatcher {
                             override fun afterTextChanged(s: Editable?) {
                                 if (TextUtils.isDigitsOnly(s)) {
-                                    dice = inDice.text.toString().toInt()
+                                    dice = s.toString().toInt()
                                 }
                             }
 
@@ -204,8 +203,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     }
                 } else if(!currentTurn.isEmpty()) {
                     if ((currentTurn.currentTurnScore + history.currentTotalScore) < minBoardScore) {
-                        Toast.makeText(
-                            this, "You must have at least $minBoardScore total points to end your turn", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "You must have at least $minBoardScore total points to end your turn", Toast.LENGTH_LONG).show()
                     } else {
                         history.currentTotalScore += currentTurn.currentTurnScore
                         currentTurn = HistoryStackTurn()
@@ -219,12 +217,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
             R.id.farkle -> {
-                history.peek()?.farkle = true
+                currentTurn.farkle = true
                 currentTurn = HistoryStackTurn()
                 history.push(currentTurn)
                 resetButtonValues()
                 turnScore.text = 0.toString()
                 diceLeft.text = 6.toString()
+                updateOutput()
             }
             R.id.undoButton -> undoHandler()
         }
@@ -248,23 +247,125 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun undoHandler(): Boolean {
+        Log.i("TEST", "enter undo")
+        Log.i("TEST", history.toString())
+        val toUndo: FarkleButton? = currentTurn.pop()
+        if(toUndo == null) {
+            Log.i("TEST", "\tenter toUndo == null")
+            history.pop()
+            currentTurn = history.peek() ?: run {
+                Log.i("TEST", "\t\tenter history == null")
+                if(!currentTurn.farkle) history.currentTotalScore -= currentTurn.currentTurnScore
+                currentTurn = HistoryStackTurn()
+                resetButtonValues()
+                updateOutput()
+                Log.i("TEST", "\t\texit history == null")
+                Log.i("TEST", "\texit toUndo == null")
+                Log.i("TEST", "exit undo\n")
+                return false
+            }
+            if(!currentTurn.farkle) history.currentTotalScore -= currentTurn.currentTurnScore
+            resetButtonValues()
+            readTurn()
+            Log.i("TEST", "\texit toUndo == null")
+            Log.i("TEST", "exit undo\n")
+            return true
+        } else {
+            Log.i("TEST", "\tenter toUndo != null")
+            currentTurn.currentTurnScore -= toUndo.value
+            currentTurn.currentDiceUsed -= toUndo.diceNeeded
+            toUndo.pressedCount--
+            if(toUndo.name != "customInput") findViewById<Button>(toUndo.textId).text = toUndo.pressedCount.toString()
+            updateOutput()
+            Log.i("TEST", "\texit toUndo != null")
+            Log.i("TEST", "exit undo\n")
+            return true
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /*
+        var toUndo: FarkleButton? = currentTurn.pop()
+        if (toUndo == null) {
+            resetButtonValues()
+            currentTurn = history.pop() ?: run{
+                history.currentTotalScore = 0
+                updateOutput()
+                return false
+            }
+            history.currentTotalScore -= currentTurn.currentTurnScore
+            toUndo = currentTurn.pop() ?: run{
+                updateOutput()
+                return false
+            }
+            updateOutput()
+        }
+        currentTurn.currentTurnScore -= toUndo.value
+        currentTurn.currentDiceUsed -= toUndo.diceNeeded
+        updateOutput()
+        toUndo.pressedCount--
+        return true
+        */
+
+        /*
+        Log.i("TEST", "enter undo")
         val toUndo: FarkleButton = currentTurn.pop() ?: run {
+            Log.i("TEST", "currentTurn.pop == null")
             history.currentTotalScore -= currentTurn.currentTurnScore
             currentTurn = history.pop() ?: run {
+                Log.i("TEST", "history.pop == null")
                 currentTurn = HistoryStackTurn()
                 history.push(currentTurn)
                 updateOutput()
                 resetButtonValues()
+                Log.i("TEST", "history.pop == null end")
                 return false
             }
-            currentTurn.pop()!!
+            currentTurn.pop() ?: run {
+                Log.i("TEST", "currentTurn.pop2 == null")
+                updateOutput()
+                resetButtonValues()
+                Log.i("TEST", "currentTurn.pop2 == null end")
+                return false
+            }
         }
+        Log.i("TEST", "currentTurn.pop == null end")
         currentTurn.currentTurnScore -= toUndo.value
         currentTurn.currentDiceUsed -= toUndo.diceNeeded
         toUndo.pressedCount--
         updateOutput()
         resetButtonValues()
         return true
+        */
 
         /*
         val toUndo = currentTurn.pop() ?: run {
@@ -298,6 +399,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         currentTurn.resetQueue()
     }
 
+    private fun readTurn() {
+        val turn = currentTurn
+        history.pop()
+        currentTurn = HistoryStackTurn()
+        history.push(currentTurn)
+        var read = turn.deQueue()
+        while (read != null) {
+            clickHandler(read, true)
+            read = turn.deQueue()
+        }
+        turn.resetQueue()
+    }
+
     private fun updateOutput() {
         turnScore.text = currentTurn.currentTurnScore.toString()
         totalScore.text = history.currentTotalScore.toString()
@@ -309,19 +423,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             endTurn.text = getString(R.string.end_turn)
             numberDiceLeft.toString()
         }
-        setBtn(numberDiceLeft, oneButton)
-        setBtn(numberDiceLeft, fiveButton)
-        setBtn(numberDiceLeft, threeKindButton)
-        setBtn(numberDiceLeft, fourKindButton)
-        setBtn(numberDiceLeft, fiveKindButton)
-        setBtn(numberDiceLeft, sixKindButton)
-        setBtn(numberDiceLeft, straightButton)
-        setBtn(numberDiceLeft, threePairsButton)
-        setBtn(numberDiceLeft, twoTripletsButton)
-        setBtn(numberDiceLeft, oneButton)
+        setBtnColor(numberDiceLeft, oneButton)
+        setBtnColor(numberDiceLeft, fiveButton)
+        setBtnColor(numberDiceLeft, threeKindButton)
+        setBtnColor(numberDiceLeft, fourKindButton)
+        setBtnColor(numberDiceLeft, fiveKindButton)
+        setBtnColor(numberDiceLeft, sixKindButton)
+        setBtnColor(numberDiceLeft, straightButton)
+        setBtnColor(numberDiceLeft, threePairsButton)
+        setBtnColor(numberDiceLeft, twoTripletsButton)
+        setBtnColor(numberDiceLeft, oneButton)
     }
 
-    private fun setBtn(numberDiceLeft: Int, fBtn: FarkleButton) {
+    private fun setBtnColor(numberDiceLeft: Int, fBtn: FarkleButton) {
         val btn = findViewById<Button>(fBtn.id)
         if (numberDiceLeft < fBtn.diceNeeded) {
             btn.backgroundTintList = ColorStateList.valueOf(getColor(R.color.colorPrimaryDark))

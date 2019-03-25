@@ -13,7 +13,7 @@ class HistoryStackGame() : Parcelable {
 
     var currentTotalScore = 0
         set(value) {
-            if (value < 0 || value % 50 != 0) throw IllegalArgumentException("currentTotalScore not mod 50 or less than 0 at value: $field") else field = value
+            field = if (value < 0) 0 else value
         }
 
     constructor(parcel: Parcel) : this() {
